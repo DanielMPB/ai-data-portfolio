@@ -52,3 +52,4 @@
 ```bash
 pip install pandas
 python comodities.py
+donwload value_of_imports.csv
