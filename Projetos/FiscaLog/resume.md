@@ -1,5 +1,0 @@
-# Apresentando FiscaLog
-"Apresentação de um pipeline de processamento de dados fiscais estruturado em três camadas (Aquisição, Estruturação e Visualização). A solução realiza o parsing automatizado de arquivos XML, higienização de dados e plotagem analítica. A arquitetura modular foi projetada sob princípios de escalabilidade, preparada para atuar como pipeline de entrada para modelos de Machine Learning focados em detecção de anomalias, sistemas de gestão de estoque e endpoints de APIs."
-
-# (English Version):
-"Presentation of a tax data processing pipeline structured in three layers (Acquisition, Structuring, and Visualization). The solution performs automated parsing of XML files, data sanitization, and analytical plotting. The modular architecture was designed under scalability principles, ready to act as an input pipeline for Machine Learning models focused on anomaly detection, inventory management systems, and API endpoints."
