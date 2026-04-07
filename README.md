@@ -1,8 +1,7 @@
 # Daniel Montelo | Data & AI Developer 👋
 
 <p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=DanielMPB&show_icons=true&theme=dracula" width="410"/>
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=DanielMPB&layout=compact&theme=dracula" width="350"/>
+  <img src="https://github-readme-stats.vercel.app/api?username=DanielMPB&show_icons=true&theme=dracula&cache_seconds=1800">
 </p>
 
 ---
