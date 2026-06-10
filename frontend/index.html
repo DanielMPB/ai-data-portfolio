@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS — Quantitative Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/vis-network@9.1.9/dist/dist/vis-network.min.css" />
+  <link rel="stylesheet" href="/style.css?v=3" />
+</head>
+<body>
+  <!-- fundo: glows + grid -->
+  <div class="bg-grid"></div>
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+
+  <div class="shell">
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <div class="brand-name">NEXUS</div>
+          <div class="brand-sub">QUANTITATIVE MONITOR</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-tab="dd">
+          <span class="ni-ico">◎</span> Investigação de Vínculos
+        </button>
+        <button class="nav-item" data-tab="ri">
+          <span class="ni-ico">▤</span> Relações com Investidores
+        </button>
+        <button class="nav-item" data-tab="b3">
+          <span class="ni-ico">▲</span> Radar de Mercado
+        </button>
+      </nav>
+
+      <div class="secure">
+        <span class="dot-live"></span>
+        <div>
+          <div class="secure-t">NEXUS SECURE</div>
+          <div class="secure-s">Canal SSL Criptografado Ativo</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================== MAIN ===================== -->
+    <main class="main">
+      <!-- ============ DUE DILIGENCE ============ -->
+      <section id="dd" class="tabpanel active">
+        <header class="page-head">
+          <div>
+            <h1>Investigação de Vínculos</h1>
+            <p class="muted">Mapeamento de multivinculações societárias de 2º grau (Receita Federal).</p>
+          </div>
+          <span class="chip">MÓDULO PREDITIVO DE RISCO</span>
+        </header>
+
+        <div class="searchbar">
+          <input id="cnpjInput" type="text" autocomplete="off"
+                 placeholder="Digite o CNPJ ou a raiz (ex.: 33.000.167/0001-01)" />
+          <button id="btnBuscar" class="btn btn-primary">Analisar CNPJ</button>
+        </div>
+        <div id="ddStatus" class="status"></div>
+
+        <!-- Estado inicial: histórico de buscas (cards) + amostra da rede -->
+        <div id="ddEmpty" class="dd-grid">
+          <div class="card graph-card">
+            <div class="card-label row">
+              <span>Amostra da Rede Societária</span>
+              <span id="sampleCaption" class="muted small mono">carregando exemplo real…</span>
+            </div>
+            <div id="grafoSample" class="graph"></div>
+            <div class="legenda">
+              <span><i class="dot alvo"></i> Empresa-Alvo</span>
+              <span><i class="dot socio"></i> Sócios (conectores)</span>
+              <span><i class="dot pj"></i> Sócio PJ</span>
+              <span><i class="dot rel"></i> Empresas Relacionadas</span>
+            </div>
+          </div>
+          <div class="card hist-panel">
+            <div class="card-label">Histórico de Buscas</div>
+            <div id="ddHist" class="hist-list"></div>
+          </div>
+        </div>
+
+        <div id="ddBody" class="dd-grid hidden">
+          <!-- coluna esquerda: empresa + score + mining -->
+          <div class="col-left">
+            <div class="card">
+              <div class="card-label">Empresa Principal</div>
+              <h2 id="ddNome" class="ent-name">—</h2>
+              <div class="ent-meta">
+                <span class="mono" id="ddCnpj">—</span>
+                <span id="ddSituacao" class="badge">—</span>
+              </div>
+            </div>
+
+            <div class="card score-card">
+              <div class="card-label">Score Híbrido NEXUS</div>
+              <div class="gauge" id="ddGauge">
+                <div class="gauge-inner">
+                  <div id="ddScore" class="gauge-num">—</div>
+                  <div class="gauge-cap">/ 100</div>
+                </div>
+              </div>
+              <div id="ddClass" class="score-class">—</div>
+              <div id="ddSat" class="muted small"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-label">Gatilhos de Risco Acionados</div>
+              <div id="ddPenal" class="penal-list"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-label">Graph Mining — Estrutura da Teia</div>
+              <div class="mining-grid">
+                <div class="stat"><span id="gmGrupo" class="stat-n">—</span><span class="stat-l">Grupo econômico</span></div>
+                <div class="stat"><span id="gmEmp" class="stat-n">—</span><span class="stat-l">Empresas</span></div>
+                <div class="stat"><span id="gmSoc" class="stat-n">—</span><span class="stat-l">Sócios</span></div>
+                <div class="stat"><span id="gmArt" class="stat-n">—</span><span class="stat-l">Pontos de articulação</span></div>
+              </div>
+              <div class="hub-box">
+                <div class="card-label">Maior Hub Societário Conectado</div>
+                <div id="gmHub" class="hub">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- coluna direita: grafo -->
+          <div class="card graph-card">
+            <div class="card-label row">
+              <span>Teia Societária de Relações</span>
+              <span id="ddGraphMeta" class="muted small mono"></span>
+            </div>
+            <div id="grafo" class="graph"></div>
+            <div class="legenda">
+              <span><i class="dot alvo"></i> Empresa-Alvo</span>
+              <span><i class="dot socio"></i> Sócios (conectores)</span>
+              <span><i class="dot pj"></i> Sócio PJ</span>
+              <span><i class="dot rel"></i> Empresas Relacionadas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CALCULADORA RI ============ -->
+      <section id="ri" class="tabpanel">
+        <header class="page-head">
+          <div>
+            <h1>Simulação de Relações com Investidores</h1>
+            <p class="muted">Auditoria preditiva de saúde de caixa, liquidez e blindagem de contingência via IA.</p>
+          </div>
+          <span class="chip">PREDITIVO DE RI</span>
+        </header>
+
+        <div class="ri-grid">
+          <form id="riForm" class="card form">
+            <div class="card-label full">Indicadores de Caixa e Liquidez</div>
+            <label>Setor da empresa
+              <select name="setor" required>
+                <option>Varejo</option>
+                <option>Indústria</option>
+                <option>Serviços</option>
+                <option>Tecnologia</option>
+                <option>Agronegócio</option>
+                <option>Construção Civil</option>
+                <option>Saúde</option>
+                <option>Educação</option>
+                <option>Energia</option>
+                <option>Financeiro</option>
+                <option>Logística e Transporte</option>
+                <option>Alimentos e Bebidas</option>
+              </select>
+            </label>
+            <label>Liquidez imediata (índice)<input class="mono" name="liquidez_imediata" type="number" step="0.01" value="0.80" required /></label>
+            <label>Reserva de contingência (R$)<input class="mono" name="reserva_contingencia" type="number" step="any" value="500000" required /></label>
+            <label>Disponibilidade líquida de proteção (R$)<input class="mono" name="disponibilidade_liquida_protecao" type="number" step="any" value="1200000" required /></label>
+            <label>Grau de cobertura de crise (meses)<input class="mono" name="grau_cobertura_crise" type="number" step="0.1" value="6" required /></label>
+            <label>Prazo médio de recebimento (dias)<input class="mono" name="prazo_medio_recebimento" type="number" value="45" required /></label>
+            <label>Prazo médio de pagamento (dias)<input class="mono" name="prazo_medio_pagamento" type="number" value="30" required /></label>
+            <button type="submit" class="btn btn-primary full">Sintetizar Relatório</button>
+            <div id="riStatus" class="status full"></div>
+          </form>
+
+          <!-- Estado inicial: estatísticas (sintéticas) do setor selecionado -->
+          <div id="riSectorStats">
+            <div class="sector-divider"><span id="riSectorTitle" class="sector-title"></span></div>
+            <div class="sector-charts">
+              <div class="card stat-card">
+                <div class="card-label">Perfil Médio do Setor</div>
+                <div id="riRadar" class="radar-wrap"></div>
+              </div>
+              <div class="card stat-card">
+                <div class="card-label row">
+                  <span>Ranking dos Setores</span>
+                  <span id="riRankToggle" class="mini-toggle"></span>
+                </div>
+                <div id="riRanking" class="rank-wrap"></div>
+              </div>
+              <div class="card stat-card">
+                <div class="card-label">Setor vs. Média do Mercado</div>
+                <div id="riVsMedia"></div>
+              </div>
+              <div class="card stat-card">
+                <div class="card-label">Faixa de Mercado (mín–máx)</div>
+                <div id="riFaixa"></div>
+              </div>
+              <div class="card stat-card">
+                <div class="card-label">Prazos Médios · PMR e PMP (dias)</div>
+                <div id="riPmrPmp" class="ciclo-wrap"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="riResult" class="card hidden">
+            <div class="rating-head">
+              <div>
+                <div class="card-label">Rating de Maturidade Financeira</div>
+                <div id="riRatingLabel" class="rating-label">—</div>
+              </div>
+              <div id="riRating" class="rating">—</div>
+            </div>
+            <article id="riReport" class="markdown"></article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ RADAR DE MERCADO ============ -->
+      <section id="b3" class="tabpanel">
+        <header class="page-head">
+          <div>
+            <h1>Radar de Mercado Quantitativo</h1>
+            <p class="muted">Múltiplos fundamentais da B3 + recomendação inteligente NEXUS.</p>
+          </div>
+          <span class="chip">ANÁLISE TÉCNICA</span>
+        </header>
+
+        <div class="searchbar">
+          <input id="tickerInput" type="text" autocomplete="off" placeholder="Ticker B3 (ex.: PETR4, VALE3, ITUB4)" />
+          <button id="btnAcao" class="btn btn-ghost">Cotação</button>
+          <button id="btnAdvisor" class="btn btn-primary">Recomendação IA</button>
+        </div>
+        <div id="b3Status" class="status"></div>
+
+        <!-- Estado inicial: panorama de mercado (macro + heatmap + watchlist) -->
+        <div id="b3Empty">
+          <div id="b3Macro" class="macro-row"></div>
+          <div class="market-grid">
+            <div class="market-col">
+              <div class="card">
+                <div class="card-label row"><span>Ibovespa · 3 meses</span><span id="ibovVar" class="mono small"></span></div>
+                <div class="ibov-wrap"><canvas id="ibovChart"></canvas></div>
+              </div>
+              <div class="card heatmap-card">
+                <div class="card-label row"><span>Mapa de Calor Setorial · B3</span><span class="muted small mono">variação do dia</span></div>
+                <div id="b3Heatmap" class="heatmap"></div>
+              </div>
+            </div>
+            <div class="market-col">
+              <div class="card">
+                <div class="card-label">Maiores Altas e Baixas do Dia</div>
+                <div id="b3Movers" class="movers"></div>
+              </div>
+              <div class="card">
+                <div class="card-label">Ativos em Destaque</div>
+                <div id="b3Watchlist" class="watchlist"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="b3Result" class="card hidden">
+          <div class="b3-head">
+            <div class="b3-id">
+              <h2 id="b3Nome" class="ent-name">—</h2>
+              <span id="b3Ticker" class="muted mono small"></span>
+            </div>
+            <div class="b3-pricebox">
+              <div id="b3Preco" class="b3-preco mono">—</div>
+              <div id="b3Var" class="b3-var mono"></div>
+            </div>
+          </div>
+          <div class="b3-chart-wrap"><canvas id="b3Chart"></canvas></div>
+          <div class="b3-mini-charts">
+            <div class="b3-mini">
+              <div class="card-label">Volume Negociado</div>
+              <div class="b3-mini-wrap"><canvas id="b3Volume"></canvas></div>
+            </div>
+            <div class="b3-mini">
+              <div class="card-label">Retorno Mensal</div>
+              <div class="b3-mini-wrap"><canvas id="b3Monthly"></canvas></div>
+            </div>
+          </div>
+          <div class="multiplos">
+            <div class="mtile"><span class="mt-l">Variação 6m</span><b id="b3Var6m" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">Máxima 6m</span><b id="b3Max" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">Mínima 6m</span><b id="b3Min" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">P/L</span><b id="b3PL" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">Dividend Yield</span><b id="b3DY" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">ROE</span><b id="b3ROE" class="mono">—</b></div>
+            <div class="mtile"><span class="mt-l">Valor de Mercado</span><b id="b3Cap" class="mono">—</b></div>
+          </div>
+          <div id="b3Advisor" class="advisor hidden">
+            <div class="card-label">RECOMENDAÇÃO INTELIGENTE NEXUS</div>
+            <div id="b3Veredito" class="veredito">—</div>
+            <p id="b3Tese" class="muted"></p>
+          </div>
+        </div>
+
+        <!-- Recomendação do dia (clicar em "Recomendação IA" sem ticker) -->
+        <div id="b3DayReport" class="card hidden">
+          <div class="card-label row">
+            <span>Recomendação NEXUS · Melhores e Piores do Dia</span>
+            <span id="b3RecModelo" class="muted small mono"></span>
+          </div>
+          <article id="b3RecReport" class="markdown"></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/vis-network@9.1.9/dist/vis-network.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/app.js?v=4"></script>
+</body>
+</html>

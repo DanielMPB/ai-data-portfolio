@@ -1,0 +1,24 @@
+# NEXUS V2 — dependências
+# Engenharia de dados / consulta analítica
+polars>=1.0
+duckdb>=1.0
+
+# Graph mining (análise estrutural da rede societária)
+networkx>=3.0
+
+# API
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+pydantic-settings>=2.2
+python-dotenv>=1.0
+
+# LLM (cliente OpenAI-compatible — Gemma via Ollama ou gateway compatível)
+openai>=1.30
+
+# Mercado (Fase 4)
+yfinance>=0.2.40
+
+# HTTP / testes
+httpx>=0.27
+pytest>=8.0

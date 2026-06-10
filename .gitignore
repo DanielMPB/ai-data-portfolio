@@ -1,0 +1,21 @@
+# Dados
+Dados Brutos/
+dados_processados/
+*.duckdb
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# IDE / ferramentas locais
+.vscode/
+.idea/
+.claude/
+
+# temporários
+_ref.*
+*.tmp
