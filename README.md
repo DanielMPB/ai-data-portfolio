@@ -77,3 +77,4 @@ uvicorn app.main:app --reload
 O FastAPI serve a aplicação web (`frontend/`) na raiz `/` e a API em `/api/v1/*`.
 Módulos da UI: Investigação de Vínculos (grafo + score + graph mining), Relações com
 Investidores (IA), Radar de Mercado (B3) e Portfólio Paralelo (multi-core).
+
