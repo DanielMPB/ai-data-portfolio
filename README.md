@@ -1,30 +1,4 @@
-"""Script completo para reorganizar o NEXUS para Projetos/NEXUS e restaurar o README do Portfólio na raiz.
-"""
-import os
-import shutil
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent
-TARGET_DIR = ROOT / "Projetos" / "NEXUS"
-
-ITEMS_NEXUS = [
-    "app",
-    "scripts",
-    "frontend",
-    "tests",
-    "paper",
-    "dados_amostra",
-    "out",
-    "requirements.txt",
-    "COMO_RODAR.md",
-    "REPERTORIO.md",
-    "COMO_INCLUIR_DADOS_AMOSTRA_GITHUB.md",
-    "PASSO_A_PASSO_SUBIR_GITHUB.md",
-    "verificar_seguranca_github.bat",
-    "configurar_ambiente_seguro.bat",
-]
-
-PORTFOLIO_README = """# Daniel Montelo | Data & AI Developer 👋
+# Daniel Montelo | Data & AI Developer 👋
 
 <p align="center">
   <img src="https://github-readme-stats.vercel.app/api?username=DanielMPB&show_icons=true&theme=dracula&cache_seconds=1800">
@@ -101,48 +75,3 @@ Atualmente, busco oportunidades para atuar na área de dados, aplicando tecnolog
 <p align="center">
   <strong>Transformando dados em soluções práticas 🚀</strong>
 </p>
-"""
-
-def organizar():
-    TARGET_DIR.mkdir(parents=True, exist_ok=True)
-
-    # 1. Se existir README.md na raiz, move para a pasta do NEXUS
-    readme_root = ROOT / "README.md"
-    readme_nexus = TARGET_DIR / "README.md"
-    if readme_root.exists():
-        shutil.move(str(readme_root), str(readme_nexus))
-        print("[OK] README do NEXUS movido para Projetos/NEXUS/README.md")
-
-    # 2. Restaurar o README original do Portfólio na raiz
-    with open(readme_root, "w", encoding="utf-8") as f:
-        f.write(PORTFOLIO_README)
-    print("[OK] README principal do seu Portfólio restaurado na raiz!")
-
-    # 3. Mover todas as pastas e arquivos do NEXUS para Projetos/NEXUS
-    for item in ITEMS_NEXUS:
-        src = ROOT / item
-        if src.exists() and src != (ROOT / "scripts"):
-            dest = TARGET_DIR / item
-            if src.is_dir():
-                if dest.exists():
-                    shutil.rmtree(dest)
-                shutil.move(str(src), str(dest))
-            else:
-                shutil.move(str(src), str(dest))
-            print(f"[OK] Movido {item} -> Projetos/NEXUS/{item}")
-
-    # Move scripts por último
-    src_scripts = ROOT / "scripts"
-    if src_scripts.exists():
-        dest_scripts = TARGET_DIR / "scripts"
-        if dest_scripts.exists():
-            shutil.rmtree(dest_scripts)
-        shutil.move(str(src_scripts), str(dest_scripts))
-        print("[OK] Movido scripts -> Projetos/NEXUS/scripts")
-
-    print("\n============================================================")
-    print("  ORGANIZAÇÃO COMPLETA CONCLUÍDA COM SUCESSO!")
-    print("============================================================")
-
-if __name__ == "__main__":
-    organizar()
