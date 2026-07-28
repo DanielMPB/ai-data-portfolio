@@ -1,6 +1,38 @@
-# 📂 Portfólio de Projetos - Inteligência Artificial e Engenharia de Dados
+# Daniel Montelo | Data & AI Developer 👋
 
-Este repositório consolida implementações práticas e arquiteturas de software focadas na extração de valor a partir de dados. Cada diretório listado abaixo contém uma solução pontual para problemas reais de análise, automação e estruturação de informações.
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=DanielMPB&show_icons=true&theme=dracula&cache_seconds=1800">
+</p>
+
+---
+
+## 🚀 Sobre Mim
+
+Estudante de Inteligência Artificial com foco em **ciência de dados, engenharia de dados, automação e desenvolvimento de soluções inteligentes em Python**.
+
+Tenho experiência prática na construção de arquiteturas de software e dados que envolvem:
+- **Engenharia & Pipelines de Dados (ETL):** Ingestão, higienização e transformação de dados massivos em SQL, DuckDB, Polars e Pandas.
+- **Inteligência Artificial & LLMs:** Modelagem preditiva, visão computacional e integração de APIs de IA (OpenAI).
+- **IoT & Monitoramento:** Sistemas físicos com ESP32, protocolo MQTT, MongoDB e Gêmeos Digitais.
+- **Visualização & Insights:** Painéis interativos e inteligência financeira para tomada de decisão.
+
+---
+
+## 🧠 Tecnologias e Ferramentas
+
+### 📊 Dados & IA
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-CC2927?style=for-the-badge&logo=postgresql&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-FFF000?style=for-the-badge&logo=duckdb&logoColor=black)
+![Power BI](https://img.shields.io/badge/Power_BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+
+### ⚙️ Áreas de Atuação
+- Inteligência Artificial & LLMs
+- Engenharia & Pipelines de Dados (ETL)
+- Análise de Dados & Visualização
+- Internet das Coisas (IoT) & Visão Computacional
 
 ---
 
@@ -8,26 +40,47 @@ Este repositório consolida implementações práticas e arquiteturas de softwar
 
 | Projeto | Domínio de Aplicação | Tecnologias Empregadas | Status | Acesso Direto |
 | :--- | :--- | :--- | :---: | :---: |
-| **[1. Comodities](#1-Comodities)** | Ciência de Dados / Finanças | `Python` `Pandas` | ✅ Concluído | [📁 Acessar Pasta](./Comodities) |
-| **[2. EcoSense](#2-EcoSense)** | IoT / Monitoramento Ambiental | `Python` `C++` `MongoDB` `MQTT` | ✅ Concluído | [📁 Acessar Pasta](./EcoSense) |
-| **[3. FiscaLog](#3-FiscaLog)** | Engenharia de Dados / Fiscal | `Python` `ETL` `XML` | ✅ Concluído | [📁 Acessar Pasta](./FiscaLog) |
+| **[1. NEXUS V2](#1-nexus-v2)** | Due Diligence / Grafos / IA | `Python` `DuckDB` `NetworkX` `FastAPI` `OpenAI` | ✅ Concluído | [📁 Acessar Pasta](./Projetos/NEXUS) |
+| **[2. Comodities](#2-comodities)** | Ciência de Dados / Finanças | `Python` `Pandas` | ✅ Concluído | [📁 Acessar Pasta](./Projetos/Comodities) |
+| **[3. EcoSense](#3-ecosense)** | IoT / Monitoramento Ambiental | `Python` `C++` `MongoDB` `MQTT` | ✅ Concluído | [📁 Acessar Pasta](./Projetos/EcoSense) |
+| **[4. FiscaLog](#4-fiscalog)** | Engenharia de Dados / Fiscal | `Python` `ETL` `XML` | ✅ Concluído | [📁 Acessar Pasta](./Projetos/FiscaLog) |
 
 ---
 
 ## 📄 Resumo Executivo dos Projetos
 
-### 1. Comodities
-Sistema de análise de dados globais de importação de *Comodities*. Transforma conjuntos de dados brutos em inteligência financeira estruturada, oferecendo ranqueamento de países, filtragem cruzada de ativos e um motor de recomendação de investimentos baseado no perfil de risco do usuário.
-👉 **[Consulte o diretório do projeto](./Comodities) para visualizar a interface de análise e as instruções de execução.**
+### 1. NEXUS V2
+Plataforma *Backend-First* de due diligence corporativa sobre dados da Receita Federal. Realiza travessia de grafos societários de 2º grau (DuckDB/NetworkX), calcula score determinístico de risco com contágio em rede (Noisy-OR), executa auditoria de RI via LLM e disponibiliza um terminal quantitativo da B3.
+👉 **[Consulte o diretório do projeto](./Projetos/NEXUS) para visualizar a documentação e instruções de execução.**
 
-### 2. EcoSense
-Plataforma IoT ponta a ponta para monitoramento da qualidade do ar (particulados e gases tóxicos) e de variáveis climáticas. A arquitetura integra nós sensores físicos (ESP32), ingestão de telemetria em tempo real (via MQTT e REST), persistência em banco de dados NoSQL (MongoDB) e um painel analítico interativo. O ecossistema inclui também um "Gêmeo Digital", que utiliza modelagem preditiva de Inteligência Artificial para gerar cenários sintéticos de poluição baseados no tráfego urbano e clima.
-👉 **[Consulte o diretório do projeto](./EcoSense) para acessar o código-fonte de hardware e as dependências do software.**
+### 2. Comodities
+Sistema de análise de dados globais de importação de *Commodities*. Transforma conjuntos de dados brutos em inteligência financeira estruturada, oferecendo ranqueamento de países, filtragem cruzada de ativos e motor de recomendação de investimentos.
+👉 **[Consulte o diretório do projeto](./Projetos/Comodities) para visualizar a interface e execução.**
 
-### 3. FiscaLog
-*Pipeline* de processamento (ETL) dedicado à engenharia de dados fiscais. O sistema atua em três camadas determinísticas para ingerir, extrair e transformar documentos XML não estruturados (Notas Fiscais Eletrônicas) em *datasets* tabulares prontos para visualização e aplicação de regras de negócio.
-👉 **[Consulte o diretório do projeto](./FiscaLog) para analisar o diagrama da arquitetura e o fluxo metodológico das fases de processamento.**
+### 3. EcoSense
+Plataforma IoT ponta a ponta para monitoramento ambiental (gases e clima). Integra sensores físicos (ESP32), ingestão via MQTT/REST, persistência em MongoDB e um "Gêmeo Digital" com modelagem preditiva por Inteligência Artificial.
+👉 **[Consulte o diretório do projeto](./Projetos/EcoSense) para acessar o código de hardware e software.**
+
+### 4. FiscaLog
+Pipeline ETL dedicado à engenharia de dados fiscais. Ingere e transforma documentos XML não estruturados (NFe) em *datasets* tabulares otimizados para visualização e aplicação de regras de negócio.
+👉 **[Consulte o diretório do projeto](./Projetos/FiscaLog) para analisar o diagrama da arquitetura e fluxo ETL.**
 
 ---
 
-**Nota Técnica:** O aprofundamento algorítmico, as lógicas de negócio e as orientações para replicação local dos ambientes virtuais encontram-se documentados no arquivo `README.md` interno de cada respectiva pasta.
+## 📊 Métricas do GitHub
+<p align="center">
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=DanielMPB&theme=2077"/>
+</p>
+
+---
+
+## 📬 Conecte-se comigo
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/daniel-mont-2ab796370)
+[![GitHub](https://img.shields.io/badge/Projetos-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/DanielMPB?tab=repositories)
+
+---
+
+<p align="center">
+  <strong>Transformando dados e Inteligência Artificial em soluções práticas 🚀</strong>
+</p>
