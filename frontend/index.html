@@ -17,6 +17,8 @@
   <div class="glow glow-b"></div>
 
   <div class="shell">
+    <button id="navOpen" class="icon-btn nav-open" title="Abrir menu" aria-label="Abrir menu">☰</button>
+    <div id="navBackdrop" class="nav-backdrop"></div>
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="sidebar">
       <div class="brand">
@@ -25,6 +27,7 @@
           <div class="brand-name">NEXUS</div>
           <div class="brand-sub">QUANTITATIVE MONITOR</div>
         </div>
+        <button id="navCollapse" class="icon-btn nav-collapse" title="Recolher menu" aria-label="Recolher menu">«</button>
       </div>
 
       <nav class="nav">
@@ -98,6 +101,7 @@
                 <span class="mono" id="ddCnpj">—</span>
                 <span id="ddSituacao" class="badge">—</span>
               </div>
+              <div id="ddSancao" class="sancao-badge hidden">—</div>
             </div>
 
             <div class="card score-card">
@@ -109,12 +113,33 @@
                 </div>
               </div>
               <div id="ddClass" class="score-class">—</div>
+              <div id="ddConfianca" class="confianca"></div>
               <div id="ddSat" class="muted small"></div>
             </div>
 
             <div class="card">
               <div class="card-label">Gatilhos de Risco Acionados</div>
               <div id="ddPenal" class="penal-list"></div>
+            </div>
+
+            <div class="card hidden" id="ddEnderecoCard">
+              <div class="card-label">Cruzamento de Endereço</div>
+              <div id="ddEndereco" class="endereco-fmt">—</div>
+              <div class="endereco-grid">
+                <div class="stat"><span id="endTotal" class="stat-n">—</span><span class="stat-l">Empresas no endereço</span></div>
+                <div class="stat"><span id="endComp" class="stat-n">—</span><span class="stat-l">Inaptas no endereço</span></div>
+                <div class="stat"><span id="endRede" class="stat-n">—</span><span class="stat-l">Na própria teia</span></div>
+              </div>
+            </div>
+
+            <div class="card hidden" id="ddPerfilCard">
+              <div class="card-label">Perfil Financeiro &amp; Fiscal</div>
+              <div class="endereco-grid">
+                <div class="stat"><span id="pfCapital" class="stat-n">—</span><span class="stat-l">Capital social</span></div>
+                <div class="stat"><span id="pfIdade" class="stat-n">—</span><span class="stat-l">Idade</span></div>
+                <div class="stat"><span id="pfDivida" class="stat-n">—</span><span class="stat-l">Dívida ativa (PGFN)</span></div>
+              </div>
+              <div id="pfDividaDet" class="muted small"></div>
             </div>
 
             <div class="card">
@@ -236,7 +261,7 @@
         <header class="page-head">
           <div>
             <h1>Radar de Mercado Quantitativo</h1>
-            <p class="muted">Múltiplos fundamentais da B3 + recomendação inteligente NEXUS.</p>
+            <p class="muted">Múltiplos fundamentais da B3 + visão de mercado NEXUS.</p>
           </div>
           <span class="chip">ANÁLISE TÉCNICA</span>
         </header>
@@ -244,7 +269,7 @@
         <div class="searchbar">
           <input id="tickerInput" type="text" autocomplete="off" placeholder="Ticker B3 (ex.: PETR4, VALE3, ITUB4)" />
           <button id="btnAcao" class="btn btn-ghost">Cotação</button>
-          <button id="btnAdvisor" class="btn btn-primary">Recomendação IA</button>
+          <button id="btnAdvisor" class="btn btn-primary">Visão de Mercado IA</button>
         </div>
         <div id="b3Status" class="status"></div>
 
@@ -307,16 +332,16 @@
             <div class="mtile"><span class="mt-l">Valor de Mercado</span><b id="b3Cap" class="mono">—</b></div>
           </div>
           <div id="b3Advisor" class="advisor hidden">
-            <div class="card-label">RECOMENDAÇÃO INTELIGENTE NEXUS</div>
+            <div class="card-label">VISÃO DE MERCADO NEXUS · LEITURA FUNDAMENTALISTA</div>
             <div id="b3Veredito" class="veredito">—</div>
             <p id="b3Tese" class="muted"></p>
           </div>
         </div>
 
-        <!-- Recomendação do dia (clicar em "Recomendação IA" sem ticker) -->
+        <!-- Visão de mercado do dia (clicar em "Visão de Mercado" sem ticker) -->
         <div id="b3DayReport" class="card hidden">
           <div class="card-label row">
-            <span>Recomendação NEXUS · Melhores e Piores do Dia</span>
+            <span>Visão de Mercado NEXUS · Destaques e Alertas do Dia</span>
             <span id="b3RecModelo" class="muted small mono"></span>
           </div>
           <article id="b3RecReport" class="markdown"></article>

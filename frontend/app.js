@@ -8,8 +8,29 @@ document.querySelectorAll(".nav-item").forEach((btn) => {
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab).classList.add("active");
     if (btn.dataset.tab === "b3") loadMarketOverview();  // lazy: cotações reais
+    if (_isMobile()) setNav(true, false);                // mobile: fecha a gaveta ao escolher
   });
 });
+
+/* ===================== sidebar recolhível ===================== */
+const _shell = document.querySelector(".shell");
+const _isMobile = () => window.matchMedia("(max-width: 760px)").matches;
+function setNav(collapsed, persist = true) {
+  _shell.classList.toggle("nav-collapsed", collapsed);
+  if (persist) { try { localStorage.setItem("navCollapsed", collapsed ? "1" : ""); } catch (e) {} }
+  // o grafo (vis.js) precisa se readaptar à nova largura
+  setTimeout(() => window.dispatchEvent(new Event("resize")), 240);
+}
+document.getElementById("navCollapse").addEventListener("click", () => setNav(true));
+document.getElementById("navOpen").addEventListener("click", () => setNav(false));
+const _navBackdrop = document.getElementById("navBackdrop");
+if (_navBackdrop) _navBackdrop.addEventListener("click", () => setNav(true, false));
+// estado inicial: no mobile começa recolhida (gaveta); no desktop respeita o salvo
+if (_isMobile()) {
+  _shell.classList.add("nav-collapsed");
+} else {
+  try { if (localStorage.getItem("navCollapsed")) _shell.classList.add("nav-collapsed"); } catch (e) {}
+}
 
 /* ===================== helpers ===================== */
 function setStatus(id, msg, kind = "") {
@@ -59,9 +80,17 @@ const GRUPOS = {
 
 // Cria uma rede Vis.js (Barnes-Hut) em `container` e corrige o tamanho do canvas.
 function criarRede(container, grafo) {
-  const nodes = new vis.DataSet(grafo.nodes.map((n) => ({
-    id: n.id, label: n.label, group: n.group, title: `${n.label}\n${n.id}`,
-  })));
+  const nodes = new vis.DataSet(grafo.nodes.map((n) => {
+    const marks = [];
+    if (n.sancionado) marks.push("⚠ Sanção oficial vigente (CEIS/CNEP/Lista Suja)");
+    if (n.divida) marks.push("💲 Dívida ativa na União (PGFN)");
+    if (n.mesmo_endereco) marks.push("📍 Mesmo endereço da empresa-alvo");
+    let label = n.label;
+    if (n.sancionado) label = "⚠ " + label;
+    else if (n.divida) label = "💲 " + label;
+    else if (n.mesmo_endereco) label = "📍 " + label;
+    return { id: n.id, label, group: n.group, title: [n.label, n.id, ...marks].join("\n") };
+  }));
   const edges = new vis.DataSet(grafo.edges.map((e) => ({
     from: e.from, to: e.to, label: e.label, arrows: "to",
   })));
@@ -148,6 +177,38 @@ function renderHistorico() {
     b.addEventListener("click", () => { document.getElementById("cnpjInput").value = b.dataset.cnpj; buscarEmpresa(); }));
 }
 
+// Tradução de cada gatilho para linguagem que qualquer leigo entende.
+const GATILHOS = {
+  situacao:         { i: "🛑", t: "Situação irregular na Receita", e: "A empresa não está plenamente ativa no cadastro (inapta, baixada ou suspensa)." },
+  situacao_especial:{ i: "🏚️", t: "Falência ou recuperação judicial", e: "A empresa está em falência, liquidação ou recuperação judicial — sinal forte de dificuldade financeira." },
+  motivo:           { i: "🚩", t: "Motivo grave no cadastro", e: "A Receita registrou um motivo sério para a situação: fraude, inexistência de fato ou omissão de declarações." },
+  cnae_ald:         { i: "💼", t: "Setor sensível a lavagem de dinheiro", e: "A atividade econômica é de um setor frequentemente usado para lavagem de dinheiro." },
+  natureza:         { i: "🔓", t: "Sem separação de patrimônio", e: "O tipo jurídico não separa os bens da empresa dos bens do dono — menos proteção, mais risco." },
+  sancao:           { i: "⛔", t: "Empresa punida oficialmente", e: "Consta em lista oficial do governo: inidônea/suspensa de licitar, anticorrupção ou trabalho escravo." },
+  divida:           { i: "💸", t: "Dívida com o governo", e: "Tem débitos inscritos na Dívida Ativa da União — impostos ou contribuições não pagos." },
+  contagio:         { i: "🕸️", t: "Sócios em empresas-problema", e: "Os sócios participam de outras empresas com muita inaptidão/baixa — possível padrão de risco na rede." },
+  sancao_rede:      { i: "🕸️", t: "Punição oficial na rede de sócios", e: "Um sócio, ou empresa ligada pelos mesmos donos, está em lista oficial de punidos." },
+  divida_rede:      { i: "🕸️", t: "Dívidas nas empresas da rede", e: "Empresas ligadas pelos mesmos sócios devem à União." },
+  endereco_rede:    { i: "📍", t: "Empresas-problema no mesmo endereço", e: "Empresas da mesma rede e no mesmo endereço estão inaptas/baixadas — padrão clássico de fachada." },
+  shell_farm:       { i: "🏭", t: "Muitas empresas novas no mesmo endereço", e: "Várias empresas ativas recém-abertas da rede dividem o endereço — possível 'fábrica' de empresas de fachada." },
+  endereco_global:  { i: "📍", t: "Endereço compartilhado por muitas empresas", e: "O endereço concentra muitas empresas inaptas — vale investigar (pode ser endereço de fachada)." },
+  perfil:           { i: "🆕", t: "Empresa nova com capital simbólico", e: "Aberta há pouco tempo e com capital social irrisório — padrão comum de empresa de fachada." },
+};
+const ESCOPO = { A: "Sobre a própria empresa", B: "Sobre a rede de sócios" };
+
+function renderGatilho(p) {
+  const g = GATILHOS[p.tipo] || { i: "•", t: "Fator de risco", e: "" };
+  const sev = p.severidade >= 0.66 ? "alta" : p.severidade >= 0.33 ? "media" : "baixa";
+  return `<div class="gatilho sev-${sev}">
+    <div class="g-ico">${g.i}</div>
+    <div class="g-body">
+      <div class="g-head"><span class="g-titulo">${g.t}</span><span class="g-pts">${p.pontos} pts</span></div>
+      ${g.e ? `<div class="g-explica">${g.e}</div>` : ""}
+      <div class="g-detalhe"><span class="g-escopo">${ESCOPO[p.camada] || ""}</span> ${p.motivo}</div>
+    </div>
+  </div>`;
+}
+
 function renderRisco(risco) {
   const gauge = document.getElementById("ddGauge");
   const cor = scoreColor(risco.nexus_score);
@@ -156,11 +217,30 @@ function renderRisco(risco) {
   document.getElementById("ddScore").textContent = risco.nexus_score;
   document.getElementById("ddClass").textContent = risco.classificacao;
   document.getElementById("ddClass").style.color = cor;
+  // Confiança do veredito: confirmado por fonte oficial > inferido pela rede.
+  const conf = document.getElementById("ddConfianca");
+  if (conf) {
+    conf.textContent = risco.veredito_confianca || "";
+    conf.className = "confianca " + (risco.ancorada_em_sancao ? "conf-alta" : "conf-inferida");
+  }
+  // Badge de sanção oficial (CEIS/CNEP).
+  const sb = document.getElementById("ddSancao");
+  if (sb) {
+    const sc = risco.sancoes || {};
+    const rede = (sc.rede_socios || 0) + (sc.rede_satelites || 0);
+    if (sc.alvo_vigente || rede) {
+      let txt = sc.alvo_vigente ? "⚠ SANÇÃO OFICIAL VIGENTE · CEIS/CNEP" : "⚠ SANÇÃO OFICIAL NA REDE";
+      if (rede) txt += ` · ${rede} vínculo(s) sancionado(s)`;
+      sb.textContent = txt;
+      sb.classList.remove("hidden");
+    } else {
+      sb.classList.add("hidden");
+    }
+  }
   document.getElementById("ddSat").textContent = `${risco.satelites_analisadas} empresa(s)-satélite na teia`;
   const penal = document.getElementById("ddPenal");
   penal.innerHTML = risco.penalidades.length
-    ? risco.penalidades.map((p) =>
-        `<div class="penal"><span class="pen-pts">${p.pontos}</span><span>Layer ${p.camada} · ${p.motivo}</span></div>`).join("")
+    ? risco.penalidades.map(renderGatilho).join("")
     : `<div class="penal-ok">✓ Nenhum gatilho de risco acionado.</div>`;
 }
 
@@ -178,6 +258,55 @@ function renderMining(gm) {
   } else {
     hub.innerHTML = `<span class="muted small">Sem sócios conectores na teia.</span>`;
   }
+}
+
+function renderEndereco(e) {
+  const card = document.getElementById("ddEnderecoCard");
+  if (!card) return;
+  // Sem a base de endereços (fail-soft), o card fica oculto.
+  if (!e || (!e.endereco_alvo && !e.empresas_no_endereco)) {
+    card.classList.add("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+  document.getElementById("ddEndereco").textContent = e.endereco_alvo || "Endereço não disponível";
+  document.getElementById("endTotal").textContent = fmtNum(e.empresas_no_endereco);
+  const comp = document.getElementById("endComp");
+  comp.textContent = fmtNum(e.inaptas_no_endereco);
+  comp.style.color = e.inaptas_no_endereco > 0 ? "var(--rose)" : "";
+  const rede = document.getElementById("endRede");
+  rede.textContent = fmtNum(e.rede_mesmo_endereco);
+  const redeRisco = (e.rede_inaptas || 0) + (e.rede_baixadas || 0) + (e.rede_ativas_recentes || 0);
+  rede.style.color = redeRisco > 0 ? "var(--rose)" : "";
+}
+
+function fmtBRL(v) {
+  if (v == null) return "—";
+  if (v >= 1e12) return "R$ " + (v / 1e12).toFixed(1) + " tri";
+  if (v >= 1e9) return "R$ " + (v / 1e9).toFixed(1) + " bi";
+  if (v >= 1e6) return "R$ " + (v / 1e6).toFixed(1) + " mi";
+  if (v >= 1e3) return "R$ " + (v / 1e3).toFixed(0) + " mil";
+  return "R$ " + Number(v).toLocaleString("pt-BR");
+}
+function renderPerfilDivida(risco) {
+  const card = document.getElementById("ddPerfilCard");
+  if (!card) return;
+  const p = risco.perfil || {}, d = risco.dividas || {};
+  const temPerfil = p.capital_social != null || p.idade_meses != null;
+  const temDivida = (d.alvo && d.alvo.inscricoes) || d.rede;
+  if (!temPerfil && !temDivida) { card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  document.getElementById("pfCapital").textContent =
+    p.capital_social != null ? fmtBRL(p.capital_social) : "—";
+  document.getElementById("pfIdade").textContent =
+    p.idade_meses != null ? (p.idade_meses < 24 ? p.idade_meses + " meses" : Math.floor(p.idade_meses / 12) + " anos") : "—";
+  const dv = document.getElementById("pfDivida");
+  if (d.alvo && d.alvo.inscricoes) { dv.textContent = fmtBRL(d.alvo.valor); dv.style.color = "var(--rose)"; }
+  else { dv.textContent = "Nenhuma"; dv.style.color = ""; }
+  let txt = "";
+  if (d.alvo && d.alvo.inscricoes) txt = `${d.alvo.inscricoes} inscrição(ões)${d.alvo.ajuizadas ? " · execução fiscal ajuizada" : ""}`;
+  if (d.rede) txt += (txt ? " · " : "") + `${d.rede} empresa(s) da rede com dívida`;
+  document.getElementById("pfDividaDet").textContent = txt;
 }
 
 async function buscarEmpresa() {
@@ -205,6 +334,8 @@ async function buscarEmpresa() {
     sit.className = "badge " + situacaoClass(d.empresa_principal.situacao);
     renderRisco(d.risco);
     renderMining(d.graph_mining);
+    renderEndereco(d.risco.endereco);
+    renderPerfilDivida(d.risco);
     document.getElementById("ddGraphMeta").textContent = `${d.grafo.nodes.length} nós · ${d.grafo.edges.length} vínculos`;
     renderGrafo(d.grafo);
     setStatus("ddStatus", "");
@@ -572,8 +703,8 @@ async function carregarRecomendacaoDia() {
   document.getElementById("b3Result").classList.add("hidden");
   const card = document.getElementById("b3DayReport");
   card.classList.remove("hidden");
-  document.getElementById("b3RecReport").innerHTML = '<div class="muted small">Analisando dezenas de ações da B3 e gerando as recomendações do dia…</div>';
-  setStatus("b3Status", "Gerando recomendações do dia via IA — pode levar alguns segundos", "loading");
+  document.getElementById("b3RecReport").innerHTML = '<div class="muted small">Analisando dezenas de ações da B3 e compilando a visão de mercado do dia…</div>';
+  setStatus("b3Status", "Compilando a visão de mercado do dia via IA — pode levar alguns segundos", "loading");
   try {
     const d = await apiGet("/api/v1/market/recomendacao-dia");
     document.getElementById("b3RecReport").innerHTML = renderMarkdown(d.relatorio_markdown);
@@ -586,7 +717,7 @@ async function carregarRecomendacaoDia() {
 }
 document.getElementById("btnAdvisor").addEventListener("click", async () => {
   const t = document.getElementById("tickerInput").value.trim();
-  if (!t) { carregarRecomendacaoDia(); return; }  // sem ticker → recomendação do dia
+  if (!t) { carregarRecomendacaoDia(); return; }  // sem ticker → visão de mercado do dia
   setStatus("b3Status", "Carregando cotação e consultando IA — pode levar alguns segundos", "loading");
   document.getElementById("b3Advisor").classList.add("hidden");
   try {
@@ -594,7 +725,7 @@ document.getElementById("btnAdvisor").addEventListener("click", async () => {
     const d = await apiPost("/api/v1/market/analyze", { ticker: t });
     const adv = document.getElementById("b3Advisor"); adv.classList.remove("hidden");
     const ver = document.getElementById("b3Veredito");
-    ver.textContent = d.veredito === "STRONG BUY" ? "COMPRA FORTE" : d.veredito === "SELL" ? "VENDA" : "MANTER";
+    ver.textContent = d.veredito === "STRONG BUY" ? "FORTE" : d.veredito === "SELL" ? "FRACO" : "NEUTRO";
     ver.className = "veredito " + (d.veredito === "SELL" ? "sell" : d.veredito === "HOLD" ? "hold" : "buy");
     document.getElementById("b3Tese").textContent = d.tese;
     setStatus("b3Status", `Modelo: ${d.modelo}`);

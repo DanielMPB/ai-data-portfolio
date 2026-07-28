@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     api_host: str = Field(default="127.0.0.1")
     api_port: int = Field(default=8000)
 
+    # ---- DuckDB (ajuste opcional de recursos) ----
+    # Vazios = usa o default do DuckDB (80% da RAM / todos os núcleos), que é o
+    # adequado para um processo único. Defina via .env só se precisar limitar na
+    # VPS (ex.: rodando outros serviços junto). ATENÇÃO: um teto baixo demais pode
+    # causar OutOfMemory em consultas de grafo grande (operações que não derramam).
+    duckdb_memory_limit: str = Field(default="")
+    duckdb_threads: int = Field(default=0)
+
     # ---- Caminhos absolutos derivados ----
     @property
     def dados_brutos(self) -> Path:
@@ -60,6 +68,41 @@ class Settings(BaseSettings):
     @property
     def duckdb_path(self) -> Path:
         return self.dados_processados / "nexus.duckdb"
+
+    @property
+    def sancoes_brutos(self) -> Path:
+        """Pasta onde o usuário deposita os CSVs de sanções (CEIS/CNEP)."""
+        return self.dados_brutos / "sancoes"
+
+    @property
+    def sancoes_db(self) -> Path:
+        """Base DuckDB de sanções (gerada por scripts/etl_sancoes.py).
+
+        Mantida separada do nexus.duckdb (6,7 GB) para poder ser atualizada sem
+        reprocessar a base da Receita — o GraphDB faz ATTACH dela se existir.
+        """
+        return self.dados_processados / "sancoes.duckdb"
+
+    @property
+    def enderecos_db(self) -> Path:
+        """Base DuckDB de endereços/cruzamento (gerada por scripts/etl_enderecos.py).
+
+        Também desacoplada do nexus.duckdb e anexada via ATTACH (fail-soft).
+        """
+        return self.dados_processados / "enderecos.duckdb"
+
+    @property
+    def dividas_brutos(self) -> Path:
+        """Pasta onde o usuário deposita os CSVs de Dívida Ativa da União (PGFN)."""
+        return self.dados_brutos / "dividas"
+
+    @property
+    def dividas_db(self) -> Path:
+        """Base DuckDB de dívida ativa PGFN (gerada por scripts/etl_dividas.py).
+
+        Desacoplada e anexada via ATTACH (fail-soft), como sanções e endereços.
+        """
+        return self.dados_processados / "dividas.duckdb"
 
 
 @lru_cache

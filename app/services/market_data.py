@@ -147,7 +147,7 @@ def _arred(v: Any) -> float | None:
     return round(float(v), 2) if isinstance(v, (int, float)) else None
 
 
-# ---- Recomendação do dia (relatório de IA sobre uma cesta ampla da B3) -----
+# ---- Visão de mercado do dia (relatório de IA sobre uma cesta ampla da B3) -
 # Universo diversificado: blue chips + mid/small caps menos conhecidas.
 _UNIVERSO = [
     "PETR4", "VALE3", "ITUB4", "BBDC4", "ABEV3", "B3SA3", "WEGE3", "BBAS3", "ITSA4",
@@ -159,9 +159,10 @@ _rec_cache: dict[str, Any] = {"ts": 0.0, "data": None}
 _REC_TTL = 600  # segundos
 
 _REC_SYSTEM = (
-    "Você é um estrategista de investimentos sênior cobrindo a bolsa brasileira (B3). "
+    "Você é um analista de mercado sênior cobrindo a bolsa brasileira (B3). "
     "Combina o desempenho recente das ações com seu conhecimento fundamentalista das "
-    "empresas para orientar investidores. Responde SEMPRE em português do Brasil."
+    "empresas para produzir uma leitura analítica e informativa do mercado — descritiva, "
+    "sem orientar compra ou venda. Responde SEMPRE em português do Brasil."
 )
 
 
@@ -188,21 +189,26 @@ def _coletar_universo() -> list[dict[str, Any]]:
 def _rec_prompt(tabela: str) -> str:
     return (
         "Com base no desempenho recente das ações da B3 abaixo (variação do dia e do mês) "
-        "e no seu conhecimento sobre essas empresas, produza um relatório de recomendações "
-        "do dia em Markdown, com EXATAMENTE estas seções (cada uma com `# ` no título):\n\n"
+        "e no seu conhecimento sobre essas empresas, produza um relatório de VISÃO DE MERCADO "
+        "do dia em Markdown, com EXATAMENTE estas seções (cada uma com `# ` no título). "
+        "O tom deve ser descritivo e analítico — NUNCA use verbos imperativos de "
+        "investimento (não escreva 'compre', 'venda', 'recomendo'); descreva fatos e "
+        "fundamentos:\n\n"
         "# PANORAMA DO MERCADO HOJE\n"
         "2-3 frases sobre o humor do mercado e setores em destaque/pressão.\n\n"
-        "# MELHORES OPORTUNIDADES DE COMPRA\n"
-        "Liste de 4 a 6 ações para comprar hoje. IMPORTANTE: inclua empresas de menor porte "
-        "e menos conhecidas (small/mid caps), não apenas blue chips. Para cada, use um bullet "
-        "com o ticker em negrito, o nome da empresa e 1-2 frases de justificativa ancoradas "
-        "nos dados e/ou nos fundamentos.\n\n"
-        "# EMPRESAS PARA EVITAR HOJE\n"
-        "Liste de 3 a 5 ações para evitar ou ter cautela, com justificativa em bullets.\n\n"
-        "# ESTRATÉGIA RECOMENDADA\n"
-        "Feche com uma orientação prática de alocação e gestão de risco.\n\n"
-        "Use apenas os preços fornecidos (não invente valores) e finalize lembrando que isto "
-        "não constitui recomendação formal de investimento.\n\n"
+        "# DESTAQUES POSITIVOS DO DIA\n"
+        "Liste de 4 a 6 ações cujos dados e fundamentos se destacam positivamente hoje. "
+        "IMPORTANTE: inclua empresas de menor porte e menos conhecidas (small/mid caps), "
+        "não apenas blue chips. Para cada, use um bullet com o ticker em negrito, o nome da "
+        "empresa e 1-2 frases descritivas ancoradas nos dados e/ou nos fundamentos.\n\n"
+        "# PONTOS DE ATENÇÃO DO DIA\n"
+        "Liste de 3 a 5 ações que apresentam sinais de fragilidade ou pressão, com a "
+        "observação dos dados em bullets.\n\n"
+        "# LEITURA ESTRATÉGICA\n"
+        "Feche com uma leitura objetiva do cenário e dos fatores de risco do mercado.\n\n"
+        "Use apenas os preços fornecidos (não invente valores) e finalize com o aviso de que "
+        "este conteúdo é informativo e analítico, NÃO constitui recomendação ou "
+        "aconselhamento de investimento.\n\n"
         "Dados recentes (B3):\n" + tabela
     )
 
@@ -214,7 +220,7 @@ async def recomendacao_dia(llm: LLMClient | None = None) -> dict[str, Any]:
         return _rec_cache["data"]
     dados = await asyncio.to_thread(_coletar_universo)
     if not dados:
-        raise TickerNaoEncontrado("Sem dados de mercado para gerar a recomendação.")
+        raise TickerNaoEncontrado("Sem dados de mercado para gerar a visão de mercado.")
     tabela = "\n".join(
         f"- {d['t']}: R$ {d['p']:.2f} | dia {d['dia']:+.2f}% | mês {d['mes']:+.2f}%" for d in dados)
     client = llm or get_llm()
@@ -226,8 +232,8 @@ async def recomendacao_dia(llm: LLMClient | None = None) -> dict[str, Any]:
 
 _SYSTEM = (
     "Você é um analista quantitativo de equities da bolsa brasileira (B3). "
-    "Emita teses de investimento técnicas, objetivas e ancoradas nos múltiplos "
-    "fundamentais. Responda SEMPRE em português do Brasil."
+    "Produza uma leitura fundamentalista técnica, objetiva e ancorada nos múltiplos — "
+    "descritiva e sem orientar compra ou venda. Responda SEMPRE em português do Brasil."
 )
 
 
@@ -235,9 +241,12 @@ def _montar_prompt(dados: dict[str, Any]) -> str:
     m = dados["multiplos"]
     serie = dados["historico"]
     linhas = [
-        "Com base na matriz fundamentalista abaixo, emita o veredito.",
-        "A primeira linha DEVE ser: `VEREDITO: X` onde X ∈ {STRONG BUY, HOLD, SELL}.",
-        "Em seguida, escreva uma tese de valuation concisa (3-5 frases).",
+        "Com base na matriz fundamentalista abaixo, classifique a saúde dos fundamentos.",
+        "A primeira linha DEVE ser: `VEREDITO: X` onde X ∈ {STRONG BUY, HOLD, SELL} "
+        "(rótulo técnico interno de força dos fundamentos: STRONG BUY = fortes, "
+        "HOLD = neutros, SELL = frágeis).",
+        "Em seguida, escreva uma leitura fundamentalista concisa (3-5 frases), descritiva "
+        "e sem orientar compra ou venda.",
         "",
         f"## {dados['nome']} ({dados['ticker']})",
         f"- Preço atual: {dados['preco_atual']} {dados['moeda']}",

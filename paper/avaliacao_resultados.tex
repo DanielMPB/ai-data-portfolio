@@ -1,0 +1,88 @@
+% =====================================================================
+%  Seção de Avaliação do NEXUS Trust Score — gerada a partir de
+%  scripts/avaliar_score.py sobre 631 empresas reais (231 sancionadas +
+%  400 controles ativos-limpos). Ground truth: sanções oficiais vigentes
+%  (CEIS/CNEP/Lista Suja do Trabalho Escravo).
+%
+%  Pacotes necessários no preâmbulo:
+%     \usepackage{booktabs}
+%     \usepackage{threeparttable}   % para as notas de rodapé da tabela
+% =====================================================================
+
+\section{Avaliação da Qualidade da Detecção}
+\label{sec:avaliacao}
+
+Para além do desempenho computacional, avaliamos a \emph{qualidade da
+detecção} do NEXUS Trust Score como um problema de classificação binária.
+A pontuação de risco de cada empresa é definida como $\text{risco}=100-\text{score}$
+e usada como a saída contínua do classificador. O \textit{ground truth} é
+composto por empresas com sanção oficial vigente (rótulo positivo,
+CEIS/CNEP/Lista Suja do Trabalho Escravo) e por uma amostra de controle de
+empresas ativas sem sanção e sem dívida ativa na União (rótulo negativo).
+A amostra avaliada contém $n=631$ empresas, sendo $231$ positivas
+($36{,}6\%$ de prevalência). Todos os intervalos entre colchetes são
+intervalos de confiança de $95\%$ obtidos por \textit{bootstrap}
+($2{,}000$ reamostragens).
+
+\begin{table}[t]
+  \centering
+  \begin{threeparttable}
+  \caption{Discriminação do NEXUS Trust Score frente a baselines
+           (limiar de decisão: risco $\geq 50$).}
+  \label{tab:avaliacao}
+  \begin{tabular}{lccc}
+    \toprule
+    Modelo & ROC-AUC & PR-AUC & F1 \\
+    \midrule
+    NEXUS (completo)\tnote{a}     & $1{,}000$ & $1{,}000$ & $1{,}000$ \\
+    NEXUS (apenas inferido)\tnote{b} & $0{,}396$ & $0{,}508$ & $0{,}362$ \\
+    \midrule
+    Baseline: dívida ativa        & $0{,}755$ & ---       & $0{,}676$ \\
+    Baseline: situação cadastral  & $0{,}610$ & ---       & $0{,}362$ \\
+    Baseline: aleatório           & $0{,}490$ & $0{,}349$ & $0{,}431$ \\
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}\footnotesize
+    \item[a] Inclui as camadas confirmadas por fonte oficial. Como o rótulo
+      (sanção) é também um insumo do score, há \emph{vazamento de rótulo}:
+      este valor é um teto otimista, não uma medida de poder preditivo.
+    \item[b] Camadas oficiais (sanção e dívida) removidas; restam apenas os
+      sinais inferidos (cadastro da Receita Federal, contágio da rede
+      societária e cruzamento de endereços).
+    \item[] PR-AUC dos baselines omitido: como os controles foram amostrados
+      sem dívida nem irregularidade cadastral, esses sinais valem zero em
+      todos os negativos por construção, tornando a métrica degenerada.
+  \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+A Tabela~\ref{tab:avaliacao} revela um resultado que o benchmark de
+desempenho não captura. No modo \emph{completo}, o NEXUS reproduz
+perfeitamente o \textit{ground truth} (ROC-AUC $=1{,}000$), mas esse valor
+reflete \textbf{vazamento de rótulo}: a sanção que define a classe positiva
+é um dos insumos diretos do score. Trata-se de uma verificação de
+sanidade --- o motor de fato ancora seu veredito nos fatos oficiais --- e
+não de evidência de capacidade preditiva.
+
+A avaliação cientificamente relevante é a do \emph{motor inferido}, com as
+camadas oficiais desligadas. Nesse cenário, a discriminação cai para
+ROC-AUC $=0{,}396$ (IC $95\%$: $[0{,}342;\,0{,}448]$), \emph{abaixo do
+acaso}, com recall de apenas $0{,}221$: os sinais de rede societária e
+co-localização, isoladamente, não separam empresas sancionadas das
+empresas-controle. Isso \textbf{não} implica que tais sinais sejam inúteis,
+mas sim que o \textit{ground truth} de sanções é inadequado para validá-los:
+sanções administrativas medem um construto de risco (idoneidade em
+licitações, corrupção, trabalho escravo) distinto daquele que a análise
+relacional busca --- estruturas de laranjas e empresas de fachada. Por fim,
+dois baselines triviais (presença de dívida ativa e situação cadastral
+negativa) já alcançam ROC-AUC de $0{,}755$ e $0{,}610$, indicando que boa
+parte do poder de separação observável vem de fatos cadastrais simples.
+
+\paragraph{Limitações e trabalhos futuros.} Estes resultados expõem a
+principal lacuna de validação: a ausência de um conjunto rotulado de
+\emph{fraude relacional confirmada} (esquemas de laranjas e fachada
+judicialmente caracterizados). A validação adequada do motor inferido --- o
+diferencial do NEXUS --- exige essa base rotulada, idealmente revisada
+manualmente, sobre a qual as métricas da Tabela~\ref{tab:avaliacao} devem ser
+recomputadas. O arcabouço de avaliação (\texttt{scripts/avaliar\_score.py})
+fica disponível para essa reprodução.

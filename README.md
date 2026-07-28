@@ -1,8 +1,6 @@
-# NEXUS V2
+# NEXUS — Plataforma de Due Diligence Corporativa, Grafos Societários, Score de Risco e Terminal B3
 
-Plataforma **Backend-First / API-First** de *due diligence* corporativa sobre a base pública
-da Receita Federal: grafos societários de 2º grau, score de risco determinístico com contágio
-de rede, calculadora de Relações com Investidores (RI) via LLM e terminal quantitativo da B3.
+Plataforma **Backend-First / API-First** de *due diligence* corporativa sobre a base pública da Receita Federal: grafos societários de 2º grau, score de risco determinístico com contágio de rede, calculadora de Relações com Investidores (RI) via LLM e terminal quantitativo da B3.
 
 ### Pilares acadêmicos demonstrados
 - **Grafos / Graph Mining** — travessia de 2º grau (DuckDB CTE) + mineração estrutural com
