@@ -28,21 +28,3 @@ Pipeline ETL dedicado à engenharia de dados fiscais. Ingere e transforma docume
 👉 **[Consulte o diretório do projeto](./Projetos/FiscaLog) para analisar o diagrama da arquitetura e fluxo ETL.**
 
 ---
-
-## 📊 Métricas do GitHub
-<p align="center">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=DanielMPB&theme=2077"/>
-</p>
-
----
-
-## 📬 Conecte-se comigo
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/daniel-mont-2ab796370)
-[![GitHub](https://img.shields.io/badge/Projetos-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/DanielMPB?tab=repositories)
-
----
-
-<p align="center">
-  <strong>Transformando dados e Inteligência Artificial em soluções práticas 🚀</strong>
-</p>
